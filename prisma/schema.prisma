@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         String   @default("user")
+  createdAt    DateTime @default(now()) @map(name: "created_at")
+  updatedAt    DateTime @updatedAt @map(name: "updated_at")
+  smokes       Smoke[]
+  @@map(name: "users")
+
+  @@index([username])
+  @@index([email])
+}
+
+model Smoke {
+  id          String   @id @default(cuid())
+  recipeTitle String
+  date        DateTime
+  smokerType  String
+  weather     String
+  details     String   @db.Text
+  rating      Int      // 1-10
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([recipeTitle])
+  @@index([date])
+  @@index([rating])
+  @@index([weather])
+  @@index([userId])
+}
