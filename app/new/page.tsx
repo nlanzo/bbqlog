@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
+import Navigation from "@/components/Navigation"
 
 export default function NewSmoke() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     recipeTitle: "",
@@ -16,22 +19,30 @@ export default function NewSmoke() {
     rating: 5,
   })
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login")
+    }
+  }, [status, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    try {
-      // TODO: Get userId from authenticated session once auth is implemented
-      // For now, using a placeholder - you'll need to implement authentication
-      const userId = "temp-user-id"
+    if (!session?.user?.id) {
+      alert("You must be logged in to create a smoke")
+      router.push("/login")
+      return
+    }
 
+    try {
       const res = await fetch("/api/smokes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           date: new Date(formData.date).toISOString(),
-          userId,
+          userId: session.user.id,
         }),
       })
 
@@ -50,18 +61,20 @@ export default function NewSmoke() {
     }
   }
 
+  if (status === "loading") {
+    return (
+      <div>
+        <Navigation />
+        <main className="container">
+          <p>Loading...</p>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div>
-      <header className="header">
-        <div className="container">
-          <h1>🔥 BBQ Log</h1>
-          <nav>
-            <Link href="/">Home</Link>
-            <Link href="/new">Log New Smoke</Link>
-            <Link href="/compare">Compare Smokes</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="container">
         <h2>Log New BBQ Smoke</h2>

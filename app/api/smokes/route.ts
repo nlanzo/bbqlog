@@ -1,23 +1,33 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const sortBy = searchParams.get("sortBy") || "date"
     const sortOrder = searchParams.get("sortOrder") || "desc"
     const weather = searchParams.get("weather")
     const recipeTitle = searchParams.get("recipeTitle")
-    const userId = searchParams.get("userId")
+    const userId = searchParams.get("userId") || session.user.id
 
-    const where: any = {}
+    // Ensure users can only access their own smokes
+    const where: any = {
+      userId: session.user.id,
+    }
     if (weather) {
       where.weather = weather
     }
     if (recipeTitle) {
       where.recipeTitle = recipeTitle
     }
-    if (userId) {
+    // Override userId only if it matches the authenticated user
+    if (userId && userId === session.user.id) {
       where.userId = userId
     }
 
@@ -55,9 +65,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await request.json()
-    const { recipeTitle, date, smokerType, weather, details, rating, userId } =
-      body
+    const { recipeTitle, date, smokerType, weather, details, rating } = body
 
     if (
       !recipeTitle ||
@@ -65,8 +79,7 @@ export async function POST(request: NextRequest) {
       !smokerType ||
       !weather ||
       !details ||
-      !rating ||
-      !userId
+      !rating
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -89,7 +102,7 @@ export async function POST(request: NextRequest) {
         weather,
         details,
         rating: parseInt(rating),
-        userId,
+        userId: session.user.id,
       },
       include: {
         user: {

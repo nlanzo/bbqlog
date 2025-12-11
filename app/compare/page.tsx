@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import Navigation from "@/components/Navigation"
 
 interface Smoke {
   id: string
@@ -19,31 +21,40 @@ interface Smoke {
 }
 
 export default function ComparePage() {
+  const router = useRouter()
+  const { data: session, status } = useSession()
   const [recipes, setRecipes] = useState<string[]>([])
   const [selectedRecipe, setSelectedRecipe] = useState<string>("")
   const [smokes, setSmokes] = useState<Smoke[]>([])
   const [selectedSmokes, setSelectedSmokes] = useState<string[]>([])
 
   useEffect(() => {
-    fetchRecipes()
-  }, [])
+    if (status === "unauthenticated") {
+      router.push("/login")
+    } else if (status === "authenticated") {
+      fetchRecipes()
+    }
+  }, [status, router])
 
   useEffect(() => {
-    if (selectedRecipe) {
+    if (selectedRecipe && status === "authenticated") {
       fetchSmokesForRecipe(selectedRecipe)
     }
-  }, [selectedRecipe])
+  }, [selectedRecipe, status])
 
   const fetchRecipes = async () => {
-    // TODO: Filter by authenticated user once auth is implemented
-    const res = await fetch("/api/recipes")
+    if (!session?.user?.id) return
+    const res = await fetch(`/api/recipes?userId=${session.user.id}`)
     const data = await res.json()
     setRecipes(data)
   }
 
   const fetchSmokesForRecipe = async (recipeTitle: string) => {
+    if (!session?.user?.id) return
     const res = await fetch(
-      `/api/smokes?recipeTitle=${encodeURIComponent(recipeTitle)}`
+      `/api/smokes?recipeTitle=${encodeURIComponent(recipeTitle)}&userId=${
+        session.user.id
+      }`
     )
     const data = await res.json()
     setSmokes(data)
@@ -68,18 +79,20 @@ export default function ComparePage() {
 
   const comparisonSmokes = smokes.filter((s) => selectedSmokes.includes(s.id))
 
+  if (status === "loading") {
+    return (
+      <div>
+        <Navigation />
+        <main className="container">
+          <p>Loading...</p>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div>
-      <header className="header">
-        <div className="container">
-          <h1>🔥 BBQ Log</h1>
-          <nav>
-            <Link href="/">Home</Link>
-            <Link href="/new">Log New Smoke</Link>
-            <Link href="/compare">Compare Smokes</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="container">
         <h2>Compare Smokes</h2>

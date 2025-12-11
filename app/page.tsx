@@ -1,10 +1,21 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import SmokeList from "@/components/SmokeList"
+import Navigation from "@/components/Navigation"
+import { getCurrentUser } from "@/lib/session"
+import { redirect } from "next/navigation"
 
 export default async function Home() {
-  // TODO: Filter by authenticated user once auth is implemented
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
   const smokes = await prisma.smoke.findMany({
+    where: {
+      userId: user.id,
+    },
     orderBy: { date: "desc" },
     include: {
       user: {
@@ -18,16 +29,7 @@ export default async function Home() {
 
   return (
     <div>
-      <header className="header">
-        <div className="container">
-          <h1>🔥 BBQ Log</h1>
-          <nav>
-            <Link href="/">Home</Link>
-            <Link href="/new">Log New Smoke</Link>
-            <Link href="/compare">Compare Smokes</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="container">
         <div

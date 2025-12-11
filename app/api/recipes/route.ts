@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const userId = searchParams.get("userId")
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    const where: any = {}
-    if (userId) {
+    const searchParams = request.nextUrl.searchParams
+    const userId = searchParams.get("userId") || session.user.id
+
+    // Ensure users can only access their own recipes
+    const where: any = {
+      userId: session.user.id,
+    }
+    // Override userId only if it matches the authenticated user
+    if (userId && userId === session.user.id) {
       where.userId = userId
     }
 
