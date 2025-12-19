@@ -183,6 +183,12 @@ a {
 
 .smoke-card {
   border-left: 4px solid #8b4513;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.smoke-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .smoke-card h3 {
@@ -214,4 +220,10 @@ a {
 
 .comparison-card {
   border-top: 4px solid #8b4513;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.comparison-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

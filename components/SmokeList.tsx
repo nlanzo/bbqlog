@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 interface Smoke {
@@ -23,6 +24,7 @@ interface SmokeListProps {
 }
 
 export default function SmokeList({ initialSmokes }: SmokeListProps) {
+  const router = useRouter()
   const [smokes, setSmokes] = useState<Smoke[]>(initialSmokes)
   const [sortBy, setSortBy] = useState<"date" | "rating" | "weather">("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
@@ -109,7 +111,12 @@ export default function SmokeList({ initialSmokes }: SmokeListProps) {
       ) : (
         <div className="smoke-list">
           {smokes.map((smoke) => (
-            <div key={smoke.id} className="card smoke-card">
+            <div
+              key={smoke.id}
+              className="card smoke-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push(`/smokes/${smoke.id}`)}
+            >
               <h3>{smoke.recipeTitle}</h3>
               <p>{smoke.details}</p>
               <div className="smoke-meta">

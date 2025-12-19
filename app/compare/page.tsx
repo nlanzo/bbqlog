@@ -131,25 +131,47 @@ export default function ComparePage() {
                       ? "2px solid #8b4513"
                       : "1px solid #ddd",
                   }}
-                  onClick={() => toggleSmoke(smoke.id)}
+                  onClick={() => router.push(`/smokes/${smoke.id}`)}
                 >
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "start",
+                      gap: "1rem",
                     }}
                   >
-                    <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleSmoke(smoke.id)
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedSmokes.includes(smoke.id)}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          toggleSmoke(smoke.id)
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
                       <h4>{smoke.recipeTitle}</h4>
                       <p style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
                         {formatDate(smoke.date)} • Rating: {smoke.rating}/10
                       </p>
-                    </div>
-                    <div>
-                      {selectedSmokes.includes(smoke.id) && (
-                        <span style={{ fontSize: "1.5rem" }}>✓</span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -169,7 +191,12 @@ export default function ComparePage() {
             <h3>Comparison</h3>
             <div className="comparison-grid">
               {comparisonSmokes.map((smoke) => (
-                <div key={smoke.id} className="card comparison-card">
+                <div
+                  key={smoke.id}
+                  className="card comparison-card"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => router.push(`/smokes/${smoke.id}`)}
+                >
                   <h4>{smoke.recipeTitle}</h4>
                   <div style={{ marginTop: "1rem" }}>
                     <p>
