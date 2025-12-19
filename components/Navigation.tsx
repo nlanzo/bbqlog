@@ -8,37 +8,35 @@ export default function Navigation() {
 
   return (
     <header className="header">
-      <div className="container">
-        <h1>🔥 BBQ Log</h1>
-        <nav>
-          <Link href="/">Home</Link>
-          {status === "authenticated" ? (
-            <>
-              <Link href="/new">Log New Smoke</Link>
-              <Link href="/compare">Compare Smokes</Link>
-              <span style={{ color: "#666" }}>{session?.user?.name}</span>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#0070f3",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  padding: 0,
-                  font: "inherit",
-                }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login">Login</Link>
-              <Link href="/register">Register</Link>
-            </>
-          )}
-        </nav>
+      <div className="header-container">
+        <div className="header-left">
+          <h1>🔥 BBQ Log</h1>
+          <nav>
+            <Link href="/">Home</Link>
+            {status === "authenticated" ? (
+              <>
+                <Link href="/new">Log New Smoke</Link>
+                <Link href="/compare">Compare Smokes</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">Login</Link>
+                <Link href="/register">Register</Link>
+              </>
+            )}
+          </nav>
+        </div>
+        {status === "authenticated" && (
+          <div className="header-user">
+            <span className="username">{session?.user?.name}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="logout-btn"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   )
